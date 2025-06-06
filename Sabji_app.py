@@ -141,7 +141,7 @@ with tab2:
 
         def highlight_jain(val):
             if val == "Jain":
-                return 'background-color: #c6f6d5'  # light green
+                return 'background-color: #d4edda; color: black'  # softer green
             return ''
 
         styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
@@ -161,5 +161,6 @@ with st.sidebar:
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
+
 
 
