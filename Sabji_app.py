@@ -2,11 +2,13 @@ import streamlit as st
 import random
 import os
 import pickle
+import pandas as pd
+from io import StringIO
 
-# 📦 File to store used combinations
+# 📁 File to store used combinations
 file_path = "used_combinations.pkl"
 
-# 📥 Load from file if exists
+# 🔄 Load from file if exists
 if os.path.exists(file_path):
     with open(file_path, "rb") as f:
         used_combinations = pickle.load(f)
@@ -34,7 +36,7 @@ lentil_curries = [
     "Rajma", "Black Chana", "Red Chori", "White Chori"
 ]
 
-# 🧠 Menu Generator
+# 🔀 Menu Generator
 def get_unique_menu():
     for _ in range(1000):
         shack1 = random.choice(gujarati_curries)
@@ -44,7 +46,6 @@ def get_unique_menu():
 
         if combo_key not in used_combinations:
             used_combinations.add(combo_key)
-            # Save updated set
             with open(file_path, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
@@ -57,22 +58,52 @@ def get_unique_menu():
             }
     return None
 
-# 🎨 Web Interface
+# 🌟 Streamlit UI
+st.set_page_config(page_title="Curry Shack Menu", page_icon="🍛", layout="centered")
+
 st.title("🍛 Curry Shack Menu Generator")
-st.subheader("✨ Get a new unique curry menu every time!")
+st.markdown("Plan your meals with unique curry combinations! Choose an option below:")
 
-if st.button("Get Today’s Menu"):
-    menu = get_unique_menu()
-    if menu:
-        for shack, item in menu.items():
-            st.markdown(f"**{shack}**: {item}")
-    else:
-        st.error("🎉 All combinations have been used!")
+# 🔘 Tabs for One-Day or Weekly View
+tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
 
-# 🔁 Optional Reset Button (for admin/testing)
-if st.sidebar.button("🔄 Reset Combinations"):
-    used_combinations.clear()
-    with open(file_path, "wb") as f:
-        pickle.dump(used_combinations, f)
-    st.sidebar.success("All combinations have been reset.")
+with tab1:
+    st.header("🍽️ Get Today's Menu")
+    if st.button("🎲 Generate Today's Shack Menu"):
+        menu = get_unique_menu()
+        if menu:
+            with st.container():
+                for shack, item in menu.items():
+                    st.markdown(f"**{shack}**: {item}")
+        else:
+            st.error("🎉 All combinations have been used!")
+
+with tab2:
+    st.header("🗓️ Weekly Shack Menu Planner")
+    weekly_menus = []
+    for day in range(1, 8):
+        menu = get_unique_menu()
+        if menu:
+            menu["Day"] = f"Day {day}"
+            weekly_menus.append(menu)
+        else:
+            st.warning(f"Only {day-1} days generated. All combinations used.")
+            break
+
+    if weekly_menus:
+        df = pd.DataFrame(weekly_menus)[["Day", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]]
+        st.dataframe(df, use_container_width=True)
+
+        # ⬇️ Download CSV
+        csv = df.to_csv(index=False)
+        st.download_button("📥 Download Weekly Menu (CSV)", csv, "weekly_curry_menu.csv", "text/csv")
+
+# ⚙️ Optional Sidebar Reset
+with st.sidebar:
+    if st.button("🔄 Reset All Used Combinations"):
+        used_combinations.clear()
+        with open(file_path, "wb") as f:
+            pickle.dump(used_combinations, f)
+        st.success("All combinations have been reset.")
+
 
