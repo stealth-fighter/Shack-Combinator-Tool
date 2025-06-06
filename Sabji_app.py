@@ -89,7 +89,7 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def draw_calendar_style_heatmap(df):
-    import streamlit_calendar as stcal
+    from streamlit_calendar import calendar as st_calendar
     from datetime import timedelta
 
     df["Date"] = pd.to_datetime(df["Date"])
@@ -98,6 +98,7 @@ def draw_calendar_style_heatmap(df):
 
     start_of_month = date(year, month, 1)
     end_of_month = (start_of_month.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+
     events = []
     for _, row in df.iterrows():
         event_date = row["Date"].date()
@@ -105,15 +106,10 @@ def draw_calendar_style_heatmap(df):
             events.append({
                 "start": event_date.isoformat(),
                 "title": "Menu Saved",
-                "color": "#34d399"  # green badge
+                "color": "#34d399"
             })
 
-    from streamlit_calendar import calendar as st_calendar
-    st_calendar(events=events),
-        editable=False,
-        selectable=True,
-        height=300,
-    )
+    st_calendar(events=events)
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
