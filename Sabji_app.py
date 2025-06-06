@@ -110,29 +110,18 @@ def draw_calendar_style_heatmap(df):
     <!DOCTYPE html>
     <html>
     <head>
-      <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
-      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+      <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+      <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
       <style>
-        body {{
-            background-color: white;
-            font-family: Arial, sans-serif;
-        }}
-        #calendar {{
-            max-width: 700px;
-            margin: 0 auto;
-            font-size: 14px;
-        }}
-        .fc-toolbar-title {{
-            font-size: 20px;
-            color: #111;
-        }}
-        .fc-event-title {{
-            font-size: 12px;
-        }}
+        body {{ background-color: white; font-family: Arial, sans-serif; }}
+        #calendar {{ max-width: 700px; margin: 0 auto; }}
+        .fc-toolbar-title {{ font-size: 20px; color: #111; }}
+        .fc-daygrid-day-number {{ font-size: 13px; }}
+        .fc-event-title {{ font-size: 12px; }}
       </style>
     </head>
     <body>
-      <div id="calendar"></div>
+      <div id='calendar'></div>
       <script>
         document.addEventListener('DOMContentLoaded', function() {{
             var calendarEl = document.getElementById('calendar');
@@ -153,6 +142,7 @@ def draw_calendar_style_heatmap(df):
     </html>
     """
     html(calendar_html, height=520, scrolling=False)
+
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
