@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random
 import os
 import pickle
@@ -8,7 +9,6 @@ import matplotlib.pyplot as plt
 import calendar
 import numpy as np
 import json
-from streamlit_calendar import calendar as st_calendar
 
 # File paths
 used_combo_file = "used_combinations.pkl"
