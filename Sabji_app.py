@@ -14,11 +14,11 @@ else:
 
 # 🥗 Your Gujarati curries (J for Jain-safe only)
 gujarati_curries = [
-    "Bhindi Capsicums",
+    "Bhindi Capsicums (J)",
     "Bhindi Potato Masala",
-    "Bhindi Masala",
+    "Bhindi Masala (J)",
     "Cauliflower Peas Potato",
-    "Cauliflower Peas Tomato",
+    "Cauliflower Peas Tomato (J)",
     "Cauliflower Potato Tomato",
     "Eggplant Lilva/Eggplant Toover",
     "Eggplant Potato",
@@ -26,7 +26,7 @@ gujarati_curries = [
     "Potato Rasa",
     "Potato Tomato",
     "Tindora Potato",
-    "Tindora Masala",
+    "Tindora Masala (J)",
     "Tindora Dry (J)",
     "Turiya Patra (J)"
 ]
