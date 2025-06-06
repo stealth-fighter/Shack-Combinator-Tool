@@ -4,25 +4,34 @@ import os
 import pickle
 import pandas as pd
 
-# 📁 Used combinations saved in local file
+# 🔄 File for used combinations
 file_path = "used_combinations.pkl"
-
 if os.path.exists(file_path):
     with open(file_path, "rb") as f:
         used_combinations = pickle.load(f)
 else:
     used_combinations = set()
 
-# 🥗 Gujarati curries with tags (J = Jain, S = Swaminarayan)
+# 🥗 Your Gujarati curries (J for Jain-safe only)
 gujarati_curries = [
-    "Bhindi Capsicums (S,J)", "Bhindi Masala (S,J)", "Tindora Dry (S,J)",
-    "Turiya Patra (S,J)", "Cauliflower Peas Tomato",
-    "Eggplant Potato Raviya", "Potato Tomato", "Tindora Potato", "Eggplant Lilva",
+    "Bhindi Capsicums",
+    "Bhindi Potato Masala",
+    "Bhindi Masala",
+    "Cauliflower Peas Potato",
+    "Cauliflower Peas Tomato",
     "Cauliflower Potato Tomato",
-    "Sev Tomato (S,J)"
+    "Eggplant Lilva/Eggplant Toover",
+    "Eggplant Potato",
+    "Eggplant Potato Raviya",
+    "Potato Rasa",
+    "Potato Tomato",
+    "Tindora Potato",
+    "Tindora Masala",
+    "Tindora Dry (J)",
+    "Turiya Patra (J)"
 ]
 
-# 🧡 Other curries (no filters applied)
+# ✅ Your unchanged Punjabi and Lentil curries
 punjabi_curries = [
     "Baingan Bharta", "Dum Aloo", "Dal Makhani", "Dal Fry", "Tadka Dal",
     "Malai Kofta", "Methi Mutter Malai", "Vegetable Korma", "Kaju Corn",
@@ -35,16 +44,14 @@ lentil_curries = [
     "Rajma", "Black Chana", "Red Chori", "White Chori"
 ]
 
-# 🔍 Filter Gujarati based on markers
+# 🔍 Filter Gujarati for Jain days only
 def filter_gujarati(diet_type):
     if diet_type == "Jain":
         return [dish for dish in gujarati_curries if "(J)" in dish]
-    elif diet_type == "Swaminarayan":
-        return [dish for dish in gujarati_curries if "(J)" in dish or "(S)" in dish]
     else:
         return gujarati_curries
 
-# 🔁 Menu Generator (with Gujarati filter only)
+# 🎲 Menu generator with Gujarati filtering
 def get_unique_menu(diet_type):
     filtered_gujarati = filter_gujarati(diet_type)
     for _ in range(1000):
@@ -69,16 +76,18 @@ def get_unique_menu(diet_type):
             }
     return None
 
-# 🌐 Webpage Layout
+# 🖥️ Streamlit UI
 st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="centered")
 st.title("🍛 Shack Menu Generator")
 
 tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
 
+# ---------------------------
 # 📅 SINGLE DAY MENU
+# ---------------------------
 with tab1:
     st.header("🎲 Generate Today's Menu")
-    diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain", "Swaminarayan"])
+    diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
     if st.button("Generate Menu"):
         menu = get_unique_menu(diet_type)
         if menu:
@@ -89,29 +98,21 @@ with tab1:
         else:
             st.error("No valid combinations found.")
 
-# 📆 WEEKLY PLANNER
+# ---------------------------
+# 📆 WEEKLY MENU PLANNER
+# ---------------------------
 with tab2:
-    st.header("📅 Weekly Menu Planner")
+    st.header("📆 Weekly Menu Planner")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        jain_days = st.number_input("Days with Jain Gujarati Dish", min_value=0, max_value=7, value=0)
-    with col2:
-        swami_days = st.number_input("Days with Swaminarayan Gujarati Dish", min_value=0, max_value=7 - jain_days, value=0)
-
-    none_days = 7 - jain_days - swami_days
+    jain_days = st.number_input("Days with Jain Gujarati Dish", min_value=0, max_value=7, value=0)
+    none_days = 7 - jain_days
     st.markdown(f"📝 Remaining {none_days} day(s) will use full Gujarati list.")
 
     menu_plan = []
     day_number = 1
+
     for _ in range(jain_days):
         menu = get_unique_menu("Jain")
-        if menu:
-            menu["Day"] = f"Day {day_number}"
-            menu_plan.append(menu)
-            day_number += 1
-    for _ in range(swami_days):
-        menu = get_unique_menu("Swaminarayan")
         if menu:
             menu["Day"] = f"Day {day_number}"
             menu_plan.append(menu)
@@ -131,7 +132,9 @@ with tab2:
     else:
         st.warning("No menus could be generated.")
 
-# 🧰 SIDEBAR RESET
+# ---------------------------
+# 🛠️ ADMIN SIDEBAR
+# ---------------------------
 with st.sidebar:
     st.header("🛠️ Admin")
     if st.button("🔄 Reset All Used Combinations"):
@@ -139,6 +142,3 @@ with st.sidebar:
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
-
-
-
