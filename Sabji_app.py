@@ -89,39 +89,33 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def draw_calendar_style_heatmap(df):
-    today = date.today()
-    year = today.year
-    month = today.month
+    import streamlit_calendar as stcal
+    from datetime import timedelta
 
     df["Date"] = pd.to_datetime(df["Date"])
-    df_month = df[(df["Date"].dt.year == year) & (df["Date"].dt.month == month)]
+    today = date.today()
+    year, month = today.year, today.month
 
-    count_by_day = df_month["Date"].dt.day.value_counts().to_dict()
-    cal = calendar.Calendar()
-    month_days = cal.monthdayscalendar(year, month)
+    start_of_month = date(year, month, 1)
+    end_of_month = (start_of_month.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+    events = []
+    for _, row in df.iterrows():
+        event_date = row["Date"].date()
+        if start_of_month <= event_date <= end_of_month:
+            events.append({
+                "start": event_date.isoformat(),
+                "title": "Menu Saved",
+                "color": "#34d399"  # green badge
+            })
 
-    fig, ax = plt.subplots(figsize=(4, 2.5))
-    ax.set_title(f"Menu Entries for {calendar.month_name[month]} {year}", fontsize=14, weight='bold')
-
-    for week_idx, week in enumerate(month_days):
-        for day_idx, day in enumerate(week):
-            if day == 0:
-                continue
-            count = count_by_day.get(day, 0)
-            color = plt.cm.YlOrBr(min(count / 5, 1)) if count else (1, 1, 1, 1)
-            ax.add_patch(plt.Rectangle((day_idx, -week_idx), 1, 1, color=color))
-            ax.text(day_idx + 0.5, -week_idx + 0.5, str(day), va='center', ha='center', fontsize=10)
-
-    ax.set_xlim(0, 7)
-    ax.set_ylim(-len(month_days), 0)
-    ax.set_xticks(np.arange(7) + 0.5)
-    ax.set_xticklabels(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
-    ax.set_yticks([])
-    ax.set_xticks(np.arange(8), minor=True)
-    ax.set_yticks(np.arange(-len(month_days) - 1, 1), minor=True)
-    ax.grid(which='minor', color='gray', linestyle='--', linewidth=0.4)
-    ax.tick_params(left=False, bottom=False)
-    st.pyplot(fig)
+    stcal.calendar(
+        events=events,
+        defaultView="dayGridMonth",
+        initialDate=start_of_month.isoformat(),
+        editable=False,
+        selectable=True,
+        height=300,
+    )
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
@@ -236,3 +230,4 @@ elif menu_option == "Admin":
             draw_calendar_style_heatmap(filtered_df)
     else:
         st.info("No logs found yet.")
+
