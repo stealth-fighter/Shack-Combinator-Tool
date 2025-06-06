@@ -76,9 +76,9 @@ st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="
 
 # 🔷 Banner Branding Line
 st.markdown("""
-    <div style='background-color:#f0f8ff; padding:15px 10px; border-radius:10px; text-align:center;'>
-        <h2 style='color:#1a1a1a; margin:0;'>🍛 Welcome to the Shack Menu Generator Tool</h2>
-        <p style='font-size:15px; color:#444;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
+    <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
+        <h2 style='color:#f97316; margin:0;'>🍛 Shack Menu Generator</h2>
+        <p style='font-size:15px; color:#f3f4f6;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
