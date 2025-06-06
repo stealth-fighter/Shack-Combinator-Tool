@@ -73,7 +73,16 @@ def get_unique_menu(diet_type):
     return None
 
 st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="wide")
-st.title("🍛 Shack Menu Generator")
+
+# 🔷 Banner Branding Line
+st.markdown("""
+    <div style='background-color:#f0f8ff; padding:15px 10px; border-radius:10px; text-align:center;'>
+        <h2 style='color:#1a1a1a; margin:0;'>🍛 Welcome to the Shack Menu Generator Tool</h2>
+        <p style='font-size:15px; color:#444;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
+    </div>
+    <br>
+""", unsafe_allow_html=True)
+
 st.markdown("---")
 
 # Sidebar Navigation
@@ -162,8 +171,9 @@ elif menu_option == "Weekly Planner":
 
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
-    if st.button("🔄 Reset All Used Combinations"):
-        used_combinations.clear()
-        with open(file_path, "wb") as f:
-            pickle.dump(used_combinations, f)
-        st.success("All combinations have been reset.")
+    with st.expander("⚙️ Reset Controls"):
+        if st.button("🔄 Reset All Used Combinations"):
+            used_combinations.clear()
+            with open(file_path, "wb") as f:
+                pickle.dump(used_combinations, f)
+            st.success("All combinations have been reset.")
