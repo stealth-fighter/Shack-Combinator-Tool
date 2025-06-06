@@ -61,7 +61,7 @@ def get_unique_menu():
 # 🌟 Streamlit UI
 st.set_page_config(page_title="Curry Shack Menu", page_icon="🍛", layout="centered")
 
-st.title("🍛 Curry Shack Menu Generator")
+st.title("🍛 Shack Menu Generator")
 st.markdown("Plan your meals with unique curry combinations! Choose an option below:")
 
 # 🔘 Tabs for One-Day or Weekly View
