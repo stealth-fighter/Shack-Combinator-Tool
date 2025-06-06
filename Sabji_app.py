@@ -3,10 +3,11 @@ import random
 import os
 import pickle
 import pandas as pd
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import matplotlib.pyplot as plt
 import calendar
 import numpy as np
+from streamlit_calendar import calendar as st_calendar
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -89,16 +90,11 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def draw_calendar_style_heatmap(df):
-    from streamlit_calendar import calendar as st_calendar
-    from datetime import timedelta
-
     df["Date"] = pd.to_datetime(df["Date"])
     today = date.today()
     year, month = today.year, today.month
-
     start_of_month = date(year, month, 1)
     end_of_month = (start_of_month.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
-
     events = []
     for _, row in df.iterrows():
         event_date = row["Date"].date()
@@ -108,15 +104,16 @@ def draw_calendar_style_heatmap(df):
                 "title": "Menu Saved",
                 "color": "#34d399"
             })
-
-    st_calendar(events=events)
+    col1, col2, col3 = st.columns([1, 2.5, 1])
+    with col2:
+        st_calendar(events=events)
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
+        <p style='font-size:15px; color:#f3f4f6;'>TBD</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
