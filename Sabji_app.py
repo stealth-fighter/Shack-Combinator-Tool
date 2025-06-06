@@ -4,7 +4,7 @@ import os
 import pickle
 import pandas as pd
 
-# 🔄 File for used combinations
+# File for used combinations
 file_path = "used_combinations.pkl"
 if os.path.exists(file_path):
     with open(file_path, "rb") as f:
@@ -12,7 +12,7 @@ if os.path.exists(file_path):
 else:
     used_combinations = set()
 
-# ✅ Your Gujarati sabjis with (J) where applicable
+# Gujarati curries with (J) for Jain-safe
 gujarati_curries = [
     "Bhindi Capsicums",
     "Bhindi Potato Masala",
@@ -31,7 +31,6 @@ gujarati_curries = [
     "Turiya Patra (J)"
 ]
 
-# Punjabi and Lentil remain unfiltered
 punjabi_curries = [
     "Baingan Bharta", "Dum Aloo", "Dal Makhani", "Dal Fry", "Tadka Dal",
     "Malai Kofta", "Methi Mutter Malai", "Vegetable Korma", "Kaju Corn",
@@ -44,13 +43,11 @@ lentil_curries = [
     "Rajma", "Black Chana", "Red Chori", "White Chori"
 ]
 
-# 🔍 Filter for Jain Gujarati only
 def filter_gujarati(diet_type):
     if diet_type == "Jain":
         return [dish for dish in gujarati_curries if "(J)" in dish]
     return gujarati_curries
 
-# 🎲 Menu generator
 def get_unique_menu(diet_type):
     filtered_gujarati = filter_gujarati(diet_type)
     for _ in range(1000):
@@ -75,15 +72,12 @@ def get_unique_menu(diet_type):
             }
     return None
 
-# 🖥️ Streamlit UI
-st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="centered")
+st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="wide")
 st.title("🍛 Shack Menu Generator")
+st.markdown("---")
 
 tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
 
-# ---------------------------
-# 📅 SINGLE DAY MENU
-# ---------------------------
 with tab1:
     st.header("🎲 Generate Today's Menu")
 
@@ -101,26 +95,26 @@ with tab1:
             else:
                 st.error("No valid combinations found.")
     else:
-        st.markdown("✅ **Today's Menu (Locked)**")
+        st.subheader("✅ Today's Menu (Locked)")
         menu = st.session_state.locked_menu
         if menu:
             if menu["Gujarati Type"] == "Jain":
                 st.markdown("🟢 **Gujarati Type: Jain**")
             else:
                 st.markdown("⚪ **Gujarati Type: Regular**")
-            for shack, item in menu.items():
-                if shack != "Gujarati Type":
-                    st.markdown(f"**{shack}**: {item}")
+            col1, col2, col3 = st.columns(3)
+            col1.markdown(f"**Shack 1:** {menu['Shack 1']}")
+            col1.markdown(f"**Shack 2:** {menu['Shack 2']}")
+            col2.markdown(f"**Shack 3:** {menu['Shack 3']}")
+            col2.markdown(f"**Shack 4:** {menu['Shack 4']}")
+            col3.markdown(f"**Shack 5:** {menu['Shack 5']}")
+            col3.markdown(f"**Shack 6:** {menu['Shack 6']}")
         if st.button("🔓 Unlock & Regenerate"):
             st.session_state.menu_locked = False
             st.session_state.locked_menu = None
 
-# ---------------------------
-# 📆 WEEKLY PLANNER
-# ---------------------------
 with tab2:
     st.header("📆 Weekly Menu Planner")
-
     jain_days = st.number_input("Days with Jain Gujarati Dish", min_value=0, max_value=7, value=0)
     none_days = 7 - jain_days
     st.markdown(f"📝 Remaining {none_days} day(s) will use full Gujarati list.")
@@ -134,6 +128,7 @@ with tab2:
             menu["Day"] = f"Day {day_number}"
             menu_plan.append(menu)
             day_number += 1
+
     for _ in range(none_days):
         menu = get_unique_menu("None")
         if menu:
@@ -159,9 +154,6 @@ with tab2:
     else:
         st.warning("No menus could be generated.")
 
-# ---------------------------
-# 🛠️ ADMIN SIDEBAR
-# ---------------------------
 with st.sidebar:
     st.header("🛠️ Admin")
     if st.button("🔄 Reset All Used Combinations"):
@@ -169,4 +161,5 @@ with st.sidebar:
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
+
 
