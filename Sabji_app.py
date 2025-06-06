@@ -95,13 +95,15 @@ with tab1:
             else:
                 st.error("No valid combinations found.")
     else:
-        st.subheader("✅ Today's Menu (Locked)")
+        st.markdown("### ✅ Today's Menu (Locked)")
         menu = st.session_state.locked_menu
         if menu:
             if menu["Gujarati Type"] == "Jain":
-                st.markdown("🟢 **Gujarati Type: Jain**")
+                st.markdown("<div style='background-color:#eafaf1; padding:10px; border-radius:5px;'><b>Gujarati Type: Jain</b></div>", unsafe_allow_html=True)
             else:
-                st.markdown("⚪ **Gujarati Type: Regular**")
+                st.markdown("<div style='background-color:#f2f2f2; padding:10px; border-radius:5px;'><b>Gujarati Type: Regular</b></div>", unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("### 🍽️ Shack Menu")
             col1, col2, col3 = st.columns(3)
             col1.markdown(f"**Shack 1:** {menu['Shack 1']}")
             col1.markdown(f"**Shack 2:** {menu['Shack 2']}")
@@ -141,7 +143,7 @@ with tab2:
 
         def highlight_jain(val):
             if val == "Jain":
-                return 'background-color: #d4edda; color: black'  # softer green
+                return 'background-color: #eafaf1; font-weight: bold; color: #1e4620'
             return ''
 
         styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
@@ -161,6 +163,7 @@ with st.sidebar:
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
+
 
 
 
