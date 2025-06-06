@@ -86,7 +86,7 @@ tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
 # 📅 SINGLE DAY MENU
 # ---------------------------
 with tab1:
-    st.header("🎲 Generate Today's Menu")
+    st.header("🎲 Generate Sabji Menu")
     diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
     if st.button("Generate Menu"):
         menu = get_unique_menu(diet_type)
