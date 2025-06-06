@@ -100,8 +100,8 @@ def draw_calendar_style_heatmap(df):
     cal = calendar.Calendar()
     month_days = cal.monthdayscalendar(year, month)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.set_title(f"Menu Entries for {calendar.month_name[month]} {year}", fontsize=16, weight='bold')
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    ax.set_title(f"Menu Entries for {calendar.month_name[month]} {year}", fontsize=14, weight='bold')
 
     for week_idx, week in enumerate(month_days):
         for day_idx, day in enumerate(week):
@@ -110,7 +110,7 @@ def draw_calendar_style_heatmap(df):
             count = count_by_day.get(day, 0)
             color = plt.cm.YlOrBr(min(count / 5, 1)) if count else (1, 1, 1, 1)
             ax.add_patch(plt.Rectangle((day_idx, -week_idx), 1, 1, color=color))
-            ax.text(day_idx + 0.5, -week_idx + 0.5, str(day), va='center', ha='center', fontsize=12)
+            ax.text(day_idx + 0.5, -week_idx + 0.5, str(day), va='center', ha='center', fontsize=10)
 
     ax.set_xlim(0, 7)
     ax.set_ylim(-len(month_days), 0)
@@ -119,15 +119,15 @@ def draw_calendar_style_heatmap(df):
     ax.set_yticks([])
     ax.set_xticks(np.arange(8), minor=True)
     ax.set_yticks(np.arange(-len(month_days) - 1, 1), minor=True)
-    ax.grid(which='minor', color='gray', linestyle='--', linewidth=0.5)
+    ax.grid(which='minor', color='gray', linestyle='--', linewidth=0.4)
     ax.tick_params(left=False, bottom=False)
     st.pyplot(fig)
 
-st.set_page_config(page_title="Shack Menu Generator", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Sabji Menu Generator", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
-        <h2 style='color:#f97316; margin:0;'>📋 Shack Menu Generator</h2>
+        <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
         <p style='font-size:15px; color:#f3f4f6;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
     </div>
     <br>
