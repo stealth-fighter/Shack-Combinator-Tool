@@ -100,7 +100,7 @@ def draw_calendar_style_heatmap(df):
     cal = calendar.Calendar()
     month_days = cal.monthdayscalendar(year, month)
 
-    fig, ax = plt.subplots(figsize=(7, 4.5))
+    fig, ax = plt.subplots(figsize=(4, 2.5))
     ax.set_title(f"Menu Entries for {calendar.month_name[month]} {year}", fontsize=14, weight='bold')
 
     for week_idx, week in enumerate(month_days):
@@ -123,7 +123,7 @@ def draw_calendar_style_heatmap(df):
     ax.tick_params(left=False, bottom=False)
     st.pyplot(fig)
 
-st.set_page_config(page_title="Sabji Menu Generator", page_icon="📋", layout="wide")
+st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
