@@ -1,9 +1,19 @@
 import streamlit as st
 import random
+import os
+import pickle
 
-# Static in-memory storage (this resets every time the app restarts)
-used_combinations = set()
+# 📦 File to store used combinations
+file_path = "used_combinations.pkl"
 
+# 📥 Load from file if exists
+if os.path.exists(file_path):
+    with open(file_path, "rb") as f:
+        used_combinations = pickle.load(f)
+else:
+    used_combinations = set()
+
+# 🥗 Curry Lists
 gujarati_curries = [
     "Bhindi Capsicums", "Bhindi Potato Masala", "Bhindi Masala",
     "Cauliflower Peas Potato", "Cauliflower Peas Tomato", "Cauliflower Potato Tomato",
@@ -24,14 +34,19 @@ lentil_curries = [
     "Rajma", "Black Chana", "Red Chori", "White Chori"
 ]
 
+# 🧠 Menu Generator
 def get_unique_menu():
     for _ in range(1000):
         shack1 = random.choice(gujarati_curries)
         shack3 = random.choice(lentil_curries)
         shack5_6 = random.sample(punjabi_curries, 2)
         combo_key = (shack1, shack3, tuple(sorted(shack5_6)))
+
         if combo_key not in used_combinations:
             used_combinations.add(combo_key)
+            # Save updated set
+            with open(file_path, "wb") as f:
+                pickle.dump(used_combinations, f)
             return {
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -42,14 +57,22 @@ def get_unique_menu():
             }
     return None
 
-# Streamlit App UI
+# 🎨 Web Interface
 st.title("🍛 Curry Shack Menu Generator")
-st.write("Click the button below to get today's unique curry menu!")
+st.subheader("✨ Get a new unique curry menu every time!")
 
-if st.button("Get Today's Menu"):
+if st.button("Get Today’s Menu"):
     menu = get_unique_menu()
     if menu:
         for shack, item in menu.items():
-            st.write(f"**{shack}**: {item}")
+            st.markdown(f"**{shack}**: {item}")
     else:
-        st.warning("All unique combinations have been used!")
+        st.error("🎉 All combinations have been used!")
+
+# 🔁 Optional Reset Button (for admin/testing)
+if st.sidebar.button("🔄 Reset Combinations"):
+    used_combinations.clear()
+    with open(file_path, "wb") as f:
+        pickle.dump(used_combinations, f)
+    st.sidebar.success("All combinations have been reset.")
+
