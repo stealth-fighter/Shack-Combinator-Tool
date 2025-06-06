@@ -72,13 +72,13 @@ def get_unique_menu(diet_type):
             }
     return None
 
-st.set_page_config(page_title="SHABJI MWNU GENERATOR", page_icon="📋", layout="wide")
+st.set_page_config(page_title="SHABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 # 🔷 Banner Branding Line
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 Shack Menu Generator</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
+        <p style='font-size:15px; color:#f3f4f6;'>TBD</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
