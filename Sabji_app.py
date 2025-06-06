@@ -3,7 +3,7 @@ import random
 import os
 import pickle
 import pandas as pd
-from datetime import date
+from datetime import datetime
 from streamlit_calendar import calendar
 import json
 
@@ -58,7 +58,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": str(date.today()),
+                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # << UPDATED
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -75,12 +75,13 @@ def save_menu_to_log(menu):
     else:
         df = pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
+    df = df.sort_values(by="Date", ascending=False)  # << NEW: Sort by most recent
     df.to_csv(daily_log_file, index=False)
 
 def get_calendar_events(df):
     df["Date"] = pd.to_datetime(df["Date"])
     events = []
-    for d in df["Date"].unique():
+    for d in df["Date"].dt.date.unique():
         events.append({
             "title": "✔ Menu Saved",
             "start": d.strftime("%Y-%m-%d"),
@@ -194,7 +195,6 @@ elif menu_option == "Admin":
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
-        # 🔥 Working Calendar with FullCalendar via component
         if not filtered_df.empty:
             st.subheader("📊 Show Calendar with Used Dates")
             events = get_calendar_events(filtered_df)
