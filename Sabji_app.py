@@ -12,13 +12,13 @@ if os.path.exists(file_path):
 else:
     used_combinations = set()
 
-# 🥗 Your Gujarati curries (J for Jain-safe only)
+# ✅ Your Gujarati sabjis with (J) where applicable
 gujarati_curries = [
-    "Bhindi Capsicums (J)",
+    "Bhindi Capsicums",
     "Bhindi Potato Masala",
-    "Bhindi Masala (J)",
+    "Bhindi Masala",
     "Cauliflower Peas Potato",
-    "Cauliflower Peas Tomato (J)",
+    "Cauliflower Peas Tomato",
     "Cauliflower Potato Tomato",
     "Eggplant Lilva/Eggplant Toover",
     "Eggplant Potato",
@@ -26,12 +26,12 @@ gujarati_curries = [
     "Potato Rasa",
     "Potato Tomato",
     "Tindora Potato",
-    "Tindora Masala (J)",
+    "Tindora Masala",
     "Tindora Dry (J)",
     "Turiya Patra (J)"
 ]
 
-# ✅ Your unchanged Punjabi and Lentil curries
+# Punjabi and Lentil remain unfiltered
 punjabi_curries = [
     "Baingan Bharta", "Dum Aloo", "Dal Makhani", "Dal Fry", "Tadka Dal",
     "Malai Kofta", "Methi Mutter Malai", "Vegetable Korma", "Kaju Corn",
@@ -44,14 +44,13 @@ lentil_curries = [
     "Rajma", "Black Chana", "Red Chori", "White Chori"
 ]
 
-# 🔍 Filter Gujarati for Jain days only
+# 🔍 Filter for Jain Gujarati only
 def filter_gujarati(diet_type):
     if diet_type == "Jain":
         return [dish for dish in gujarati_curries if "(J)" in dish]
-    else:
-        return gujarati_curries
+    return gujarati_curries
 
-# 🎲 Menu generator with Gujarati filtering
+# 🎲 Menu generator
 def get_unique_menu(diet_type):
     filtered_gujarati = filter_gujarati(diet_type)
     for _ in range(1000):
@@ -86,20 +85,38 @@ tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
 # 📅 SINGLE DAY MENU
 # ---------------------------
 with tab1:
-    st.header("🎲 Generate Sabji Menu")
-    diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
-    if st.button("Generate Menu"):
-        menu = get_unique_menu(diet_type)
+    st.header("🎲 Generate Today's Menu")
+
+    if "menu_locked" not in st.session_state:
+        st.session_state.menu_locked = False
+        st.session_state.locked_menu = None
+
+    if not st.session_state.menu_locked:
+        diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
+        if st.button("Generate Menu"):
+            menu = get_unique_menu(diet_type)
+            if menu:
+                st.session_state.locked_menu = menu
+                st.session_state.menu_locked = True
+            else:
+                st.error("No valid combinations found.")
+    else:
+        st.markdown("✅ **Today's Menu (Locked)**")
+        menu = st.session_state.locked_menu
         if menu:
+            if menu["Gujarati Type"] == "Jain":
+                st.markdown("🟢 **Gujarati Type: Jain**")
+            else:
+                st.markdown("⚪ **Gujarati Type: Regular**")
             for shack, item in menu.items():
                 if shack != "Gujarati Type":
                     st.markdown(f"**{shack}**: {item}")
-            st.success(f"Gujarati Filter Applied: {menu['Gujarati Type']}")
-        else:
-            st.error("No valid combinations found.")
+        if st.button("🔓 Unlock & Regenerate"):
+            st.session_state.menu_locked = False
+            st.session_state.locked_menu = None
 
 # ---------------------------
-# 📆 WEEKLY MENU PLANNER
+# 📆 WEEKLY PLANNER
 # ---------------------------
 with tab2:
     st.header("📆 Weekly Menu Planner")
@@ -125,8 +142,18 @@ with tab2:
             day_number += 1
 
     if menu_plan:
-        df = pd.DataFrame(menu_plan)[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]]
-        st.dataframe(df, use_container_width=True)
+        df = pd.DataFrame(menu_plan)
+
+        def highlight_jain(val):
+            if val == "Jain":
+                return 'background-color: #c6f6d5'  # light green
+            return ''
+
+        styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
+            highlight_jain, subset=["Gujarati Type"]
+        )
+
+        st.dataframe(styled_df, use_container_width=True)
         csv = df.to_csv(index=False)
         st.download_button("⬇️ Download Weekly Menu (CSV)", csv, "weekly_shack_menu.csv", "text/csv")
     else:
@@ -142,3 +169,4 @@ with st.sidebar:
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
+
