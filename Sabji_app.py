@@ -96,14 +96,16 @@ def draw_calendar_style_heatmap(df):
     df["Date"] = pd.to_datetime(df["Date"])
     dates = df["Date"].dt.strftime("%Y-%m-%d").unique().tolist()
 
-    events = [
-        {
-            "title": "✔",
-            "start": d,
-            "allDay": True,
-            "color": "#10b981"  # Tailwind green
-        } for d in dates
-    ]
+   events = [
+    {
+        "title": "●",
+        "start": d,
+        "allDay": True,
+        "color": "#22c55e",
+        "textColor": "#000",
+        "display": "background"
+    } for d in dates
+]
 
     calendar_html = f"""
     <html>
@@ -123,6 +125,7 @@ def draw_calendar_style_heatmap(df):
           var calendarEl = document.getElementById('calendar');
           var calendar = new FullCalendar.Calendar(calendarEl, {{
             initialView: 'dayGridMonth',
+            eventDisplay: 'block',
             height: 'auto',
             events: {json.dumps(events)},
             headerToolbar: {{
