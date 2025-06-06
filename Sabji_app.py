@@ -98,49 +98,61 @@ def draw_calendar_style_heatmap(df):
 
     events = [
         {
-            "title": "●",
+            "title": "✔",
             "start": d,
             "allDay": True,
-            "color": "#22c55e",
-            "textColor": "#000",
-            "display": "background"
+            "color": "#16a34a",
+            "textColor": "#fff"
         } for d in dates
     ]
 
     calendar_html = f"""
+    <!DOCTYPE html>
     <html>
     <head>
-      <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
-      <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+      <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
       <style>
-        body {{ background-color: #fff; }}
-        #calendar {{ max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; }}
-        .fc-toolbar-title {{ font-size: 20px; }}
-        .fc-event-title, .fc-daygrid-day-number {{ font-size: 12px; }}
+        body {{
+            background-color: white;
+            font-family: Arial, sans-serif;
+        }}
+        #calendar {{
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 14px;
+        }}
+        .fc-toolbar-title {{
+            font-size: 20px;
+            color: #111;
+        }}
+        .fc-event-title {{
+            font-size: 12px;
+        }}
       </style>
     </head>
     <body>
-      <div id='calendar'></div>
+      <div id="calendar"></div>
       <script>
         document.addEventListener('DOMContentLoaded', function() {{
-          var calendarEl = document.getElementById('calendar');
-          var calendar = new FullCalendar.Calendar(calendarEl, {{
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            events: {json.dumps(events)},
-            headerToolbar: {{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,dayGridWeek'
-            }}
-          }});
-          calendar.render();
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {{
+                initialView: 'dayGridMonth',
+                height: 'auto',
+                headerToolbar: {{
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                }},
+                events: {json.dumps(events)}
+            }});
+            calendar.render();
         }});
       </script>
     </body>
     </html>
     """
-    components.html(calendar_html, height=520, scrolling=False)
+    html(calendar_html, height=520, scrolling=False)
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
