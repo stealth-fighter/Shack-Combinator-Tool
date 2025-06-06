@@ -72,7 +72,7 @@ def get_unique_menu(diet_type):
             }
     return None
 
-st.set_page_config(page_title="Shack Menu Generator", page_icon="📋", layout="wide")
+st.set_page_config(page_title="SHABJI MWNU GENERATOR", page_icon="📋", layout="wide")
 
 # 🔷 Banner Branding Line
 st.markdown("""
