@@ -90,22 +90,23 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def draw_calendar_style_heatmap(df):
-    import streamlit.components.v1 as components
-    import json
+    from streamlit.components.v1 import html
+    from datetime import timedelta
 
     df["Date"] = pd.to_datetime(df["Date"])
     dates = df["Date"].dt.strftime("%Y-%m-%d").unique().tolist()
 
-   events = [
-    {
-        "title": "●",
-        "start": d,
-        "allDay": True,
-        "color": "#22c55e",
-        "textColor": "#000",
-        "display": "background"
-    } for d in dates
-]
+    events = [
+        {
+            "title": "●",
+            "start": d,
+            "allDay": True,
+            "color": "#22c55e",
+            "textColor": "#000",
+            "display": "background"
+        } for d in dates
+    ]
+
 
     calendar_html = f"""
     <html>
