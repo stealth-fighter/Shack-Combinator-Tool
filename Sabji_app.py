@@ -4,9 +4,9 @@ import os
 import pickle
 import pandas as pd
 from datetime import date, datetime
-import seaborn as sns
 import matplotlib.pyplot as plt
 import calendar
+import numpy as np
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -88,18 +88,40 @@ def save_menu_to_log(menu):
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
     df.to_csv(daily_log_file, index=False)
 
-def draw_calendar_heatmap(log_df):
-    log_df["Date"] = pd.to_datetime(log_df["Date"])
-    log_df["Month"] = log_df["Date"].dt.month
-    log_df["Day"] = log_df["Date"].dt.day
-    log_df["Count"] = 1
-    pivot_table = log_df.pivot_table(index="Day", columns="Month", values="Count", aggfunc="sum", fill_value=0)
-    plt.figure(figsize=(12, 4))
-    sns.heatmap(pivot_table, annot=True, fmt="d", cmap="YlOrBr", cbar=False, linewidths=.5)
-    plt.title("📅 Menu Entry Heatmap by Calendar")
-    plt.xlabel("Month")
-    plt.ylabel("Day")
-    st.pyplot(plt)
+def draw_calendar_style_heatmap(df):
+    today = date.today()
+    year = today.year
+    month = today.month
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    df_month = df[(df["Date"].dt.year == year) & (df["Date"].dt.month == month)]
+
+    count_by_day = df_month["Date"].dt.day.value_counts().to_dict()
+    cal = calendar.Calendar()
+    month_days = cal.monthdayscalendar(year, month)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.set_title(f"Menu Entries for {calendar.month_name[month]} {year}", fontsize=16, weight='bold')
+
+    for week_idx, week in enumerate(month_days):
+        for day_idx, day in enumerate(week):
+            if day == 0:
+                continue
+            count = count_by_day.get(day, 0)
+            color = plt.cm.YlOrBr(min(count / 5, 1)) if count else (1, 1, 1, 1)
+            ax.add_patch(plt.Rectangle((day_idx, -week_idx), 1, 1, color=color))
+            ax.text(day_idx + 0.5, -week_idx + 0.5, str(day), va='center', ha='center', fontsize=12)
+
+    ax.set_xlim(0, 7)
+    ax.set_ylim(-len(month_days), 0)
+    ax.set_xticks(np.arange(7) + 0.5)
+    ax.set_xticklabels(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
+    ax.set_yticks([])
+    ax.set_xticks(np.arange(8), minor=True)
+    ax.set_yticks(np.arange(-len(month_days) - 1, 1), minor=True)
+    ax.grid(which='minor', color='gray', linestyle='--', linewidth=0.5)
+    ax.tick_params(left=False, bottom=False)
+    st.pyplot(fig)
 
 st.set_page_config(page_title="Shack Menu Generator", page_icon="📋", layout="wide")
 
@@ -111,7 +133,6 @@ st.markdown("""
     <br>
 """, unsafe_allow_html=True)
 
-st.markdown("---")
 menu_option = st.sidebar.radio("Choose View", ["Daily Menu", "Weekly Planner", "Admin"])
 
 if menu_option == "Daily Menu":
@@ -212,6 +233,6 @@ elif menu_option == "Admin":
 
         if filtered_df is not None and not filtered_df.empty:
             st.subheader("📊 Show Heatmap by Calendar")
-            draw_calendar_heatmap(filtered_df)
+            draw_calendar_style_heatmap(filtered_df)
     else:
         st.info("No logs found yet.")
