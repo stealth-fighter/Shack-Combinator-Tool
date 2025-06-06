@@ -76,46 +76,48 @@ st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="
 st.title("🍛 Shack Menu Generator")
 st.markdown("---")
 
-tab1, tab2 = st.tabs(["📅 Single Day", "📆 Weekly Planner"])
+# Sidebar Navigation
+menu_option = st.sidebar.radio("Choose View", ["Daily Menu", "Weekly Planner", "Admin"])
 
-with tab1:
+if menu_option == "Daily Menu":
     st.header("🎲 Generate Today's Menu")
 
-    if "menu_locked" not in st.session_state:
-        st.session_state.menu_locked = False
-        st.session_state.locked_menu = None
-
-    if not st.session_state.menu_locked:
-        diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
-        if st.button("Generate Menu"):
-            menu = get_unique_menu(diet_type)
-            if menu:
-                st.session_state.locked_menu = menu
-                st.session_state.menu_locked = True
-            else:
-                st.error("No valid combinations found.")
-    else:
-        st.markdown("### ✅ Today's Menu (Locked)")
-        menu = st.session_state.locked_menu
-        if menu:
-            if menu["Gujarati Type"] == "Jain":
-                st.markdown("<div style='background-color:#eafaf1; padding:10px; border-radius:5px;'><b>Gujarati Type: Jain</b></div>", unsafe_allow_html=True)
-            else:
-                st.markdown("<div style='background-color:#f2f2f2; padding:10px; border-radius:5px;'><b>Gujarati Type: Regular</b></div>", unsafe_allow_html=True)
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("### 🍽️ Shack Menu")
-            col1, col2, col3 = st.columns(3)
-            col1.markdown(f"**Shack 1:** {menu['Shack 1']}")
-            col1.markdown(f"**Shack 2:** {menu['Shack 2']}")
-            col2.markdown(f"**Shack 3:** {menu['Shack 3']}")
-            col2.markdown(f"**Shack 4:** {menu['Shack 4']}")
-            col3.markdown(f"**Shack 5:** {menu['Shack 5']}")
-            col3.markdown(f"**Shack 6:** {menu['Shack 6']}")
-        if st.button("🔓 Unlock & Regenerate"):
+    with st.expander("🔐 Lock/Unlock Today's Menu"):
+        if "menu_locked" not in st.session_state:
             st.session_state.menu_locked = False
             st.session_state.locked_menu = None
 
-with tab2:
+        if not st.session_state.menu_locked:
+            diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
+            if st.button("Generate Menu"):
+                menu = get_unique_menu(diet_type)
+                if menu:
+                    st.session_state.locked_menu = menu
+                    st.session_state.menu_locked = True
+                else:
+                    st.error("No valid combinations found.")
+        else:
+            st.markdown("### ✅ Today's Menu (Locked)")
+            menu = st.session_state.locked_menu
+            if menu:
+                if menu["Gujarati Type"] == "Jain":
+                    st.markdown("<div style='background-color:#eafaf1; padding:10px; border-radius:5px;'><b>Gujarati Type: Jain</b></div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='background-color:#f2f2f2; padding:10px; border-radius:5px;'><b>Gujarati Type: Regular</b></div>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("### 🍽️ Shack Menu")
+                col1, col2, col3 = st.columns(3)
+                col1.markdown(f"**Shack 1:** {menu['Shack 1']}")
+                col1.markdown(f"**Shack 2:** {menu['Shack 2']}")
+                col2.markdown(f"**Shack 3:** {menu['Shack 3']}")
+                col2.markdown(f"**Shack 4:** {menu['Shack 4']}")
+                col3.markdown(f"**Shack 5:** {menu['Shack 5']}")
+                col3.markdown(f"**Shack 6:** {menu['Shack 6']}")
+            if st.button("🔓 Unlock & Regenerate"):
+                st.session_state.menu_locked = False
+                st.session_state.locked_menu = None
+
+elif menu_option == "Weekly Planner":
     st.header("📆 Weekly Menu Planner")
     jain_days = st.number_input("Days with Jain Gujarati Dish", min_value=0, max_value=7, value=0)
     none_days = 7 - jain_days
@@ -150,20 +152,18 @@ with tab2:
             highlight_jain, subset=["Gujarati Type"]
         )
 
-        st.dataframe(styled_df, use_container_width=True)
+        with st.expander("📋 View Weekly Plan"):
+            st.dataframe(styled_df, use_container_width=True)
+
         csv = df.to_csv(index=False)
         st.download_button("⬇️ Download Weekly Menu (CSV)", csv, "weekly_shack_menu.csv", "text/csv")
     else:
         st.warning("No menus could be generated.")
 
-with st.sidebar:
-    st.header("🛠️ Admin")
+elif menu_option == "Admin":
+    st.header("🛠️ Admin Panel")
     if st.button("🔄 Reset All Used Combinations"):
         used_combinations.clear()
         with open(file_path, "wb") as f:
             pickle.dump(used_combinations, f)
         st.success("All combinations have been reset.")
-
-
-
-
