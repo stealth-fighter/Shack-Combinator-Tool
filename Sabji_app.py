@@ -189,23 +189,29 @@ elif menu_option == "Weekly Planner":
 
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
-    with st.expander("🗂️ View Daily Menu Log"):
-        if os.path.exists(daily_log_file):
-            log_df = pd.read_csv(daily_log_file)
-            log_df["Date"] = pd.to_datetime(log_df["Date"])
-            min_date = log_df["Date"].min()
-            max_date = log_df["Date"].max()
+    filtered_df = None
+    if os.path.exists(daily_log_file):
+        log_df = pd.read_csv(daily_log_file)
+        log_df["Date"] = pd.to_datetime(log_df["Date"])
+        min_date = log_df["Date"].min()
+        max_date = log_df["Date"].max()
+
+        with st.expander("🗂️ View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
             selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique().tolist()))
+
             filtered_df = log_df[
                 (log_df["Date"] >= pd.to_datetime(date_range[0])) &
                 (log_df["Date"] <= pd.to_datetime(date_range[1]))
             ]
             if selected_dish != "All":
                 filtered_df = filtered_df[filtered_df["Shack 1"] == selected_dish]
+
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
-            with st.expander("📊 Show Heatmap by Calendar"):
-                draw_calendar_heatmap(filtered_df)
-        else:
-            st.info("No logs found yet.")
+
+        if filtered_df is not None and not filtered_df.empty:
+            st.subheader("📊 Show Heatmap by Calendar")
+            draw_calendar_heatmap(filtered_df)
+    else:
+        st.info("No logs found yet.")
