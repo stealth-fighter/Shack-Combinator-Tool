@@ -72,13 +72,13 @@ def get_unique_menu(diet_type):
             }
     return None
 
-st.set_page_config(page_title="Shack Menu Generator", page_icon="🍛", layout="wide")
+st.set_page_config(page_title="Shack Menu Generator", page_icon="📋", layout="wide")
 
 # 🔷 Banner Branding Line
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
-        <h2 style='color:#f97316; margin:0;'>🍛 Shack Menu Generator</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>TBD</p>
+        <h2 style='color:#f97316; margin:0;'>📋 Shack Menu Generator</h2>
+        <p style='font-size:15px; color:#f3f4f6;'>Designed for restaurant staff to create daily & weekly curry combinations with dietary filters</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
@@ -106,22 +106,24 @@ if menu_option == "Daily Menu":
                 else:
                     st.error("No valid combinations found.")
         else:
-            st.markdown("### ✅ Today's Menu (Locked)")
+            st.markdown("### ✅ TODAY’S MENU (LOCKED)")
             menu = st.session_state.locked_menu
             if menu:
-                if menu["Gujarati Type"] == "Jain":
-                    st.markdown("<div style='background-color:#eafaf1; padding:10px; border-radius:5px;'><b>Gujarati Type: Jain</b></div>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<div style='background-color:#f2f2f2; padding:10px; border-radius:5px;'><b>Gujarati Type: Regular</b></div>", unsafe_allow_html=True)
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("### 🍽️ Shack Menu")
-                col1, col2, col3 = st.columns(3)
-                col1.markdown(f"**Shack 1:** {menu['Shack 1']}")
-                col1.markdown(f"**Shack 2:** {menu['Shack 2']}")
-                col2.markdown(f"**Shack 3:** {menu['Shack 3']}")
-                col2.markdown(f"**Shack 4:** {menu['Shack 4']}")
-                col3.markdown(f"**Shack 5:** {menu['Shack 5']}")
-                col3.markdown(f"**Shack 6:** {menu['Shack 6']}")
+                st.markdown(f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>", unsafe_allow_html=True)
+
+                shack_icons = ["🥬", "🥘", "🫘", "🍛", "🍲", "🍲"]
+                shack_colors = ["#38bdf8", "#38bdf8", "#a3e635", "#a3e635", "#facc15", "#facc15"]
+                for i in range(1, 7):
+                    label = f"Shack {i}"
+                    dish = menu[label]
+                    icon = shack_icons[i - 1]
+                    color = shack_colors[i - 1]
+                    st.markdown(f"""
+                        <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
+                        <b>{icon} {label}:</b> {dish}
+                        </div>
+                    """, unsafe_allow_html=True)
+
             if st.button("🔓 Unlock & Regenerate"):
                 st.session_state.menu_locked = False
                 st.session_state.locked_menu = None
