@@ -108,10 +108,8 @@ def draw_calendar_style_heatmap(df):
                 "color": "#34d399"  # green badge
             })
 
-    stcal.calendar(
-        events=events,
-        defaultView="dayGridMonth",
-        initialDate=start_of_month.isoformat(),
+    from streamlit_calendar import calendar as st_calendar
+    st_calendar(events=events),
         editable=False,
         selectable=True,
         height=300,
@@ -230,4 +228,3 @@ elif menu_option == "Admin":
             draw_calendar_style_heatmap(filtered_df)
     else:
         st.info("No logs found yet.")
-
