@@ -90,23 +90,54 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def draw_calendar_style_heatmap(df):
+    import streamlit.components.v1 as components
+    import json
+
     df["Date"] = pd.to_datetime(df["Date"])
-    today = date.today()
-    year, month = today.year, today.month
-    start_of_month = date(year, month, 1)
-    end_of_month = (start_of_month.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
-    events = []
-    for _, row in df.iterrows():
-        event_date = row["Date"].date()
-        if start_of_month <= event_date <= end_of_month:
-            events.append({
-                "start": event_date.isoformat(),
-                "title": "Menu Saved",
-                "color": "#34d399"
-            })
-    col1, col2, col3 = st.columns([1, 2.5, 1])
-    with col2:
-        st_calendar(events=events)
+    dates = df["Date"].dt.strftime("%Y-%m-%d").unique().tolist()
+
+    events = [
+        {
+            "title": "✔",
+            "start": d,
+            "allDay": True,
+            "color": "#10b981"  # Tailwind green
+        } for d in dates
+    ]
+
+    calendar_html = f"""
+    <html>
+    <head>
+      <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+      <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+      <style>
+        #calendar {{ max-width: 700px; margin: 20px auto; font-family: sans-serif; }}
+        .fc .fc-toolbar-title {{ font-size: 20px; }}
+        .fc-event-title {{ font-size: 14px; }}
+      </style>
+    </head>
+    <body>
+      <div id='calendar'></div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {{
+          var calendarEl = document.getElementById('calendar');
+          var calendar = new FullCalendar.Calendar(calendarEl, {{
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            events: {json.dumps(events)},
+            headerToolbar: {{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,dayGridWeek'
+            }}
+          }});
+          calendar.render();
+        }});
+      </script>
+    </body>
+    </html>
+    """
+    components.html(calendar_html, height=500, scrolling=False)
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
