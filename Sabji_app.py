@@ -1,13 +1,10 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import random
 import os
 import pickle
 import pandas as pd
-from datetime import date, datetime, timedelta
-import matplotlib.pyplot as plt
-import calendar
-import numpy as np
+from datetime import date
+from streamlit_calendar import calendar
 import json
 
 # File paths
@@ -23,21 +20,11 @@ else:
 
 # Gujarati curries with (J) for Jain-safe
 gujarati_curries = [
-    "Bhindi Capsicums",
-    "Bhindi Potato Masala",
-    "Bhindi Masala",
-    "Cauliflower Peas Potato",
-    "Cauliflower Peas Tomato",
-    "Cauliflower Potato Tomato",
-    "Eggplant Lilva/Eggplant Toover",
-    "Eggplant Potato",
-    "Eggplant Potato Raviya",
-    "Potato Rasa",
-    "Potato Tomato",
-    "Tindora Potato",
-    "Tindora Masala",
-    "Tindora Dry (J)",
-    "Turiya Patra (J)"
+    "Bhindi Capsicums", "Bhindi Potato Masala", "Bhindi Masala",
+    "Cauliflower Peas Potato", "Cauliflower Peas Tomato", "Cauliflower Potato Tomato",
+    "Eggplant Lilva/Eggplant Toover", "Eggplant Potato", "Eggplant Potato Raviya",
+    "Potato Rasa", "Potato Tomato", "Tindora Potato", "Tindora Masala",
+    "Tindora Dry (J)", "Turiya Patra (J)"
 ]
 
 punjabi_curries = [
@@ -90,71 +77,24 @@ def save_menu_to_log(menu):
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
     df.to_csv(daily_log_file, index=False)
 
-def draw_calendar_style_heatmap(df):
-    from streamlit.components.v1 import html
-
+def get_calendar_events(df):
     df["Date"] = pd.to_datetime(df["Date"])
-    dates = df["Date"].dt.strftime("%Y-%m-%d").unique().tolist()
-
-    events = [
-        {
-            "title": "✔",
-            "start": d,
+    events = []
+    for d in df["Date"].unique():
+        events.append({
+            "title": "✔ Menu Saved",
+            "start": d.strftime("%Y-%m-%d"),
             "allDay": True,
-            "color": "#16a34a",
-            "textColor": "#fff"
-        } for d in dates
-    ]
-
-    # Updated HTML with embedded JS and CSS (srcdoc-safe)
-    calendar_html = f"""
-    <html>
-    <head>
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet"/>
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-        <style>
-            html, body {{
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: white;
-            }}
-            #calendar {{
-                max-width: 95%;
-                margin: 20px auto;
-            }}
-        </style>
-    </head>
-    <body>
-        <div id="calendar"></div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {{
-                var calendarEl = document.getElementById('calendar');
-                var calendar = new FullCalendar.Calendar(calendarEl, {{
-                    initialView: 'dayGridMonth',
-                    height: 'auto',
-                    headerToolbar: {{
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth'
-                    }},
-                    events: {json.dumps(events)}
-                }});
-                calendar.render();
-            }});
-        </script>
-    </body>
-    </html>
-    """
-
-    html(calendar_html, height=600, scrolling=True)
+            "color": "#22c55e"
+        })
+    return events
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>TBD</p>
+        <p style='font-size:15px; color:#f3f4f6;'>Your daily random sabji planner!</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
@@ -236,7 +176,6 @@ elif menu_option == "Weekly Planner":
 
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
-    filtered_df = None
     if os.path.exists(daily_log_file):
         log_df = pd.read_csv(daily_log_file)
         log_df["Date"] = pd.to_datetime(log_df["Date"])
@@ -246,19 +185,29 @@ elif menu_option == "Admin":
         with st.expander("🗂️ View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
             selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique().tolist()))
-
             filtered_df = log_df[
                 (log_df["Date"] >= pd.to_datetime(date_range[0])) &
                 (log_df["Date"] <= pd.to_datetime(date_range[1]))
             ]
             if selected_dish != "All":
                 filtered_df = filtered_df[filtered_df["Shack 1"] == selected_dish]
-
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
-        if filtered_df is not None and not filtered_df.empty:
-            st.subheader("📊 Show Heatmap by Calendar")
-            draw_calendar_style_heatmap(filtered_df)
+        # 🔥 Working Calendar with FullCalendar via component
+        if not filtered_df.empty:
+            st.subheader("📊 Show Calendar with Used Dates")
+            events = get_calendar_events(filtered_df)
+            calendar_options = {
+                "initialView": "dayGridMonth",
+                "editable": False,
+                "headerToolbar": {
+                    "left": "prev,next today",
+                    "center": "title",
+                    "right": "dayGridMonth,listMonth"
+                },
+                "height": 550
+            }
+            calendar(events=events, options=calendar_options)
     else:
         st.info("No logs found yet.")
