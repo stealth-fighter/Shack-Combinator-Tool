@@ -110,11 +110,13 @@ def draw_calendar_style_heatmap(df):
     <!DOCTYPE html>
     <html>
     <head>
-      <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+      <meta charset='utf-8'/>
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+      <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet'>
       <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
       <style>
-        body {{ background-color: white; font-family: Arial, sans-serif; }}
-        #calendar {{ max-width: 700px; margin: 0 auto; }}
+        body {{ background-color: white; font-family: Arial, sans-serif; margin: 0; padding: 0; }}
+        #calendar {{ max-width: 700px; margin: 0 auto; padding-top: 10px; }}
         .fc-toolbar-title {{ font-size: 20px; color: #111; }}
         .fc-daygrid-day-number {{ font-size: 13px; }}
         .fc-event-title {{ font-size: 12px; }}
@@ -124,25 +126,24 @@ def draw_calendar_style_heatmap(df):
       <div id='calendar'></div>
       <script>
         document.addEventListener('DOMContentLoaded', function() {{
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {{
-                initialView: 'dayGridMonth',
-                height: 'auto',
-                headerToolbar: {{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek'
-                }},
-                events: {json.dumps(events)}
-            }});
-            calendar.render();
+          var calendarEl = document.getElementById('calendar');
+          var calendar = new FullCalendar.Calendar(calendarEl, {{
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,dayGridWeek'
+            }},
+            events: {json.dumps(events)}
+          }});
+          calendar.render();
         }});
       </script>
     </body>
     </html>
     """
-    html(calendar_html, height=520, scrolling=False)
-
+    html(calendar_html, height=550, scrolling=False)
 
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
