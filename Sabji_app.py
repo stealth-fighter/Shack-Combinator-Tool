@@ -93,7 +93,7 @@ st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>Your daily random sabji planner!</p>
+        <p style='font-size:15px; color:#f3f4f6;'>Your Daily Sabji Planner!</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
@@ -205,7 +205,7 @@ elif menu_option == "Admin":
                     "center": "title",
                     "right": "dayGridMonth,listMonth"
                 },
-                "height": 550
+                "height": 350
             }
             calendar(events=events, options=calendar_options)
     else:
