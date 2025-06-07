@@ -6,6 +6,10 @@ import pandas as pd
 from datetime import datetime
 from streamlit_calendar import calendar
 import json
+import pytz  # For timezone handling
+
+# Set your local timezone here
+tz = pytz.timezone("Asia/Kolkata")  # Change to your desired timezone
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -58,7 +62,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # << UPDATED
+                "Date": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),  # Correct local time
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -75,7 +79,7 @@ def save_menu_to_log(menu):
     else:
         df = pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
-    df = df.sort_values(by="Date", ascending=False)  # << NEW: Sort by most recent
+    df = df.sort_values(by="Date", ascending=False)
     df.to_csv(daily_log_file, index=False)
 
 def get_calendar_events(df):
