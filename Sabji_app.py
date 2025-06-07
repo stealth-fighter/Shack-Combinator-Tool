@@ -77,9 +77,10 @@ def save_menu_to_log(menu):
     df.to_csv(daily_log_file, index=False)
 
 def get_calendar_events(df):
-    df["Date"] = pd.to_datetime(df["Date"])
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df = df.dropna(subset=["Date"])
     events = []
-    for d in df["Date"].unique():
+    for d in df["Date"].dt.date.unique():
         events.append({
             "title": "✔ Menu Saved",
             "start": d.strftime("%Y-%m-%d"),
@@ -177,7 +178,8 @@ elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
         log_df = pd.read_csv(daily_log_file)
-        log_df["Date"] = pd.to_datetime(log_df["Date"])
+        log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
+        log_df = log_df.dropna(subset=["Date"])
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
 
@@ -193,7 +195,6 @@ elif menu_option == "Admin":
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
-        # 🔥 Working Calendar with FullCalendar via component
         if not filtered_df.empty:
             st.subheader("📊 Show Calendar with Used Dates")
             events = get_calendar_events(filtered_df)
