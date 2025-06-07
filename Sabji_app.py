@@ -6,8 +6,9 @@ import pandas as pd
 from datetime import datetime
 from streamlit_calendar import calendar
 import pytz
+import json
 
-# Set timezone to Los Angeles
+# ✅ Timezone: Los Angeles / California
 tz = pytz.timezone("America/Los_Angeles")
 
 # File paths
@@ -21,6 +22,7 @@ if os.path.exists(used_combo_file):
 else:
     used_combinations = set()
 
+# Gujarati curries with (J) for Jain-safe
 gujarati_curries = [
     "Bhindi Capsicums", "Bhindi Potato Masala", "Bhindi Masala",
     "Cauliflower Peas Potato", "Cauliflower Peas Tomato", "Cauliflower Potato Tomato",
@@ -60,7 +62,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": datetime.now(tz),
+                "Date": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -77,22 +79,23 @@ def save_menu_to_log(menu):
     else:
         df = pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
+    df = df.sort_values(by="Date", ascending=False)
     df.to_csv(daily_log_file, index=False)
 
-def load_log_df():
-    if not os.path.exists(daily_log_file):
-        return pd.DataFrame()
-    df = pd.read_csv(daily_log_file)
-    df.columns = [col.strip() for col in df.columns]
-    if "Date" not in df.columns:
-        st.error("'Date' column missing in log file.")
-        st.stop()
-    df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d %H:%M:%S%z", errors="coerce")
+def get_calendar_events(df):
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
     df = df.dropna(subset=["Date"])
-    return df
+    events = []
+    for d in df["Date"].dt.date.unique():
+        events.append({
+            "title": "✔ Menu Saved",
+            "start": d.strftime("%Y-%m-%d"),
+            "allDay": True,
+            "color": "#22c55e"
+        })
+    return events
 
-# -- STREAMLIT STARTS --
-st.set_page_config("Sabji Menu Generator", layout="wide")
+st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
@@ -161,10 +164,17 @@ elif menu_option == "Weekly Planner":
             menu["Day"] = f"Day {day_number}"
             menu_plan.append(menu)
             day_number += 1
-
     if menu_plan:
         df = pd.DataFrame(menu_plan)
-        st.dataframe(df, use_container_width=True)
+        def highlight_jain(val):
+            if val == "Jain":
+                return 'background-color: #eafaf1; font-weight: bold; color: #1e4620'
+            return ''
+        styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
+            highlight_jain, subset=["Gujarati Type"]
+        )
+        with st.expander("📋 View Weekly Plan"):
+            st.dataframe(styled_df, use_container_width=True)
         csv = df.to_csv(index=False)
         st.download_button("⬇️ Download Weekly Menu (CSV)", csv, "weekly_shack_menu.csv", "text/csv")
     else:
@@ -172,27 +182,52 @@ elif menu_option == "Weekly Planner":
 
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
-    log_df = load_log_df()
-    if not log_df.empty:
-        st.write("### Log Entries")
-        st.dataframe(log_df)
-        st.subheader("📊 Show Calendar")
-        events = [
-            {
-                "title": "✔ Menu Saved",
-                "start": d.strftime("%Y-%m-%d"),
-                "allDay": True,
-                "color": "#22c55e"
-            } for d in log_df["Date"].dt.date.unique()
-        ]
-        calendar(events=events, options={
-            "initialView": "dayGridMonth",
-            "height": 550,
-            "headerToolbar": {
-                "left": "prev,next today",
-                "center": "title",
-                "right": "dayGridMonth,listMonth"
+    if os.path.exists(daily_log_file):
+        log_df = pd.read_csv(daily_log_file, dtype=str)
+        log_df.columns = [col.strip() for col in log_df.columns]  # Strip column names
+        if "Date" in log_df.columns:
+            log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
+            log_df = log_df.dropna(subset=["Date"])
+        else:
+            st.error("❌ 'Date' column not found. Please check your CSV file format.")
+            st.stop()
+
+        min_date = log_df["Date"].min()
+        max_date = log_df["Date"].max()
+
+        with st.expander("🗂️ View Daily Menu Log"):
+            date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
+            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique()))
+            filtered_df = log_df[
+                (log_df["Date"] >= pd.to_datetime(date_range[0])) &
+                (log_df["Date"] <= pd.to_datetime(date_range[1]))
+            ]
+            if selected_dish != "All":
+                filtered_df = filtered_df[filtered_df["Shack 1"] == selected_dish]
+            st.dataframe(filtered_df)
+            st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
+
+        if not filtered_df.empty:
+            st.subheader("📊 Show Calendar with Used Dates")
+            events = get_calendar_events(filtered_df)
+            calendar_options = {
+                "initialView": "dayGridMonth",
+                "editable": False,
+                "headerToolbar": {
+                    "left": "prev,next today",
+                    "center": "title",
+                    "right": "dayGridMonth,listMonth"
+                },
+                "height": 550
             }
-        })
+            calendar(events=events, options=calendar_options)
+
+        # 🧹 Optional reset button
+        if st.sidebar.button("🧹 Reset All Log Data"):
+            if os.path.exists(daily_log_file):
+                os.remove(daily_log_file)
+                st.success("✅ Log reset complete.")
+                st.experimental_rerun()
+
     else:
-        st.info("No valid menu log found.")
+        st.info("No logs found yet.")
