@@ -5,11 +5,11 @@ import pickle
 import pandas as pd
 from datetime import datetime
 from streamlit_calendar import calendar
+import pytz
 import json
-import pytz  # For timezone handling
 
-# Set your local timezone here
-tz = pytz.timezone("Asia/Kolkata")  # Change to your desired timezone
+# ✅ Set your timezone here (Los Angeles / California)
+tz = pytz.timezone("America/Los_Angeles")
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -62,7 +62,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),  # Correct local time
+                "Date": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -75,7 +75,7 @@ def get_unique_menu(diet_type):
 
 def save_menu_to_log(menu):
     if os.path.exists(daily_log_file):
-        df = pd.read_csv(daily_log_file)
+        df = pd.read_csv(daily_log_file, dtype=str)
     else:
         df = pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
@@ -182,7 +182,7 @@ elif menu_option == "Weekly Planner":
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
-        log_df = pd.read_csv(daily_log_file)
+        log_df = pd.read_csv(daily_log_file, dtype=str)
         log_df["Date"] = pd.to_datetime(log_df["Date"])
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
