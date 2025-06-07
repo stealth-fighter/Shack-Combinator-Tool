@@ -184,14 +184,20 @@ elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
         log_df = pd.read_csv(daily_log_file, dtype=str)
-        log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
-        log_df = log_df.dropna(subset=["Date"])
+        log_df.columns = [col.strip() for col in log_df.columns]  # Strip column names
+        if "Date" in log_df.columns:
+            log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
+            log_df = log_df.dropna(subset=["Date"])
+        else:
+            st.error("❌ 'Date' column not found. Please check your CSV file format.")
+            st.stop()
+
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
 
         with st.expander("🗂️ View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
-            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique().tolist()))
+            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique()))
             filtered_df = log_df[
                 (log_df["Date"] >= pd.to_datetime(date_range[0])) &
                 (log_df["Date"] <= pd.to_datetime(date_range[1]))
@@ -215,5 +221,13 @@ elif menu_option == "Admin":
                 "height": 550
             }
             calendar(events=events, options=calendar_options)
+
+        # 🧹 Optional reset button
+        if st.sidebar.button("🧹 Reset All Log Data"):
+            if os.path.exists(daily_log_file):
+                os.remove(daily_log_file)
+                st.success("✅ Log reset complete.")
+                st.experimental_rerun()
+
     else:
         st.info("No logs found yet.")
