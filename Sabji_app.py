@@ -82,7 +82,7 @@ def get_calendar_events(df):
     for d in df["Date"].unique():
         events.append({
             "title": "✔ Menu Saved",
-            "start": d.strftime("%Y-%m-%d"),
+            "start": d.strftime("%m-%d-%Y"),
             "allDay": True,
             "color": "#22c55e"
         })
