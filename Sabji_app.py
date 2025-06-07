@@ -3,13 +3,9 @@ import random
 import os
 import pickle
 import pandas as pd
-from datetime import datetime
+from datetime import date
 from streamlit_calendar import calendar
-import pytz
 import json
-
-# ✅ Timezone: Los Angeles / California
-tz = pytz.timezone("America/Los_Angeles")
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -62,7 +58,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S"),
+                "Date": str(date.today()),
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -75,18 +71,16 @@ def get_unique_menu(diet_type):
 
 def save_menu_to_log(menu):
     if os.path.exists(daily_log_file):
-        df = pd.read_csv(daily_log_file, dtype=str)
+        df = pd.read_csv(daily_log_file)
     else:
         df = pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
-    df = df.sort_values(by="Date", ascending=False)
     df.to_csv(daily_log_file, index=False)
 
 def get_calendar_events(df):
-    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-    df = df.dropna(subset=["Date"])
+    df["Date"] = pd.to_datetime(df["Date"])
     events = []
-    for d in df["Date"].dt.date.unique():
+    for d in df["Date"].unique():
         events.append({
             "title": "✔ Menu Saved",
             "start": d.strftime("%Y-%m-%d"),
@@ -183,21 +177,14 @@ elif menu_option == "Weekly Planner":
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
-        log_df = pd.read_csv(daily_log_file, dtype=str)
-        log_df.columns = [col.strip() for col in log_df.columns]  # Strip column names
-        if "Date" in log_df.columns:
-            log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
-            log_df = log_df.dropna(subset=["Date"])
-        else:
-            st.error("❌ 'Date' column not found. Please check your CSV file format.")
-            st.stop()
-
+        log_df = pd.read_csv(daily_log_file)
+        log_df["Date"] = pd.to_datetime(log_df["Date"])
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
 
         with st.expander("🗂️ View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
-            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique()))
+            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique().tolist()))
             filtered_df = log_df[
                 (log_df["Date"] >= pd.to_datetime(date_range[0])) &
                 (log_df["Date"] <= pd.to_datetime(date_range[1]))
@@ -207,6 +194,7 @@ elif menu_option == "Admin":
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
+        # 🔥 Working Calendar with FullCalendar via component
         if not filtered_df.empty:
             st.subheader("📊 Show Calendar with Used Dates")
             events = get_calendar_events(filtered_df)
@@ -221,13 +209,5 @@ elif menu_option == "Admin":
                 "height": 550
             }
             calendar(events=events, options=calendar_options)
-
-        # 🧹 Optional reset button
-        if st.sidebar.button("🧹 Reset All Log Data"):
-            if os.path.exists(daily_log_file):
-                os.remove(daily_log_file)
-                st.success("✅ Log reset complete.")
-                st.experimental_rerun()
-
     else:
         st.info("No logs found yet.")
