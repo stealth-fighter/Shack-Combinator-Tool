@@ -206,8 +206,8 @@ elif menu_option == "Admin":
                     "center": "title",
                     "right": "dayGridMonth,listMonth"
                 },
-                "height": 350,
-                "width": 50
+                "height": 400,
+                "width": 20
             }
             calendar(events=events, options=calendar_options)
     else:
