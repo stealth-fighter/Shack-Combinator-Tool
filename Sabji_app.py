@@ -20,16 +20,15 @@ else:
 
 # Gujarati curries with (J) for Jain-safe
 gujarati_curries = [
-    "Bhindi Capsicums", "Bhindi Potato Masala", "Bhindi Masala",
-    "Cauliflower Peas Potato", "Cauliflower Peas Tomato", "Cauliflower Potato Tomato",
-    "Eggplant Lilva/Eggplant Toover", "Eggplant Potato", "Eggplant Potato Raviya",
-    "Potato Rasa", "Potato Tomato", "Tindora Potato", "Tindora Masala",
-    "Tindora Dry (J)", "Turiya Patra (J)"
+    "Bhindi Potato", " Stuffed Bhindi (J)", "Bhindi Masala (J)", "Cauliflower Peas Potato",
+    "Cauliflower Peas Tomato (J)", "Cauliflower Potato Tomato", "Eggplant Lilva/Eggplant Toover", 
+    "Eggplant Potato", "Eggplant Potato Raviya", "Potato Rasa", "Potato Tomato", "Tindora Potato Rasa", 
+    "Tindora Masala (J)", "Tindora Ravaiya (J)", "Tindora Rasa", "Turiya Patra (J)"
 ]
 
 punjabi_curries = [
-    "Baingan Bharta", "Dum Aloo", "Dal Makhani", "Dal Fry", "Tadka Dal",
-    "Malai Kofta", "Methi Mutter Malai", "Vegetable Korma", "Kaju Corn",
+    "Baigan Bharta", "Dum Aloo", "Dal Makhani", "Dal Fry", "Tadka Dal", "Malai Kofta", 
+    "Methi Mutter Malai", "Vegetable Korma", "Vegetable Jelfrazi", "Navratan Korma", "Kaju Corn",
     "Kaju Khoya", "Shahi Paneer", "Palak Paneer", "Kadai Paneer", "Mutter Paneer",
     "Paneer Tikka", "Paneer Angara", "Paneer Chettinad", "Paneer Bhurji", "Paneer Pasanda"
 ]
