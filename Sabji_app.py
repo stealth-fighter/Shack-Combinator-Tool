@@ -117,11 +117,12 @@ if menu:
         icon = shack_icons[i - 1]
         color = shack_colors[i - 1]
         st.markdown(
-            f\"\"\"
+            f"""
             <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
             <b>{icon} {label}:</b> {dish}
             </div>
-            \"\"\", unsafe_allow_html=True
+            """,
+            unsafe_allow_html=True
         )
 
 # --- Weekly Planner ---
