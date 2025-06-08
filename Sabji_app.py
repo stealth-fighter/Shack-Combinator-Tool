@@ -6,9 +6,8 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 from streamlit_calendar import calendar
 import pytz
-import calendar as cal
 
-# Timezone setup
+# Set timezone for Los Angeles
 LA_TZ = pytz.timezone("America/Los_Angeles")
 
 # File paths
@@ -22,7 +21,8 @@ if os.path.exists(used_combo_file):
 else:
     used_combinations = set()
 
-# Gujarati curries with (J) for Jain-safe
+# Dishes
+
 gujarati_curries = [
     "Bhindi Potato", " Stuffed Bhindi (J)", "Bhindi Masala (J)", "Cauliflower Peas Potato",
     "Cauliflower Peas Tomato (J)", "Cauliflower Potato Tomato", "Eggplant Lilva/Eggplant Toover", 
@@ -43,9 +43,7 @@ lentil_curries = [
 ]
 
 def filter_gujarati(diet_type):
-    if diet_type == "Jain":
-        return [dish for dish in gujarati_curries if "(J)" in dish]
-    return gujarati_curries
+    return [dish for dish in gujarati_curries if "(J)" in dish] if diet_type == "Jain" else gujarati_curries
 
 def get_unique_menu(diet_type):
     filtered_gujarati = filter_gujarati(diet_type)
@@ -73,10 +71,7 @@ def get_unique_menu(diet_type):
     return None
 
 def save_menu_to_log(menu):
-    if os.path.exists(daily_log_file):
-        df = pd.read_csv(daily_log_file)
-    else:
-        df = pd.DataFrame()
+    df = pd.read_csv(daily_log_file) if os.path.exists(daily_log_file) else pd.DataFrame()
     df = pd.concat([df, pd.DataFrame([menu])], ignore_index=True)
     df.to_csv(daily_log_file, index=False)
 
@@ -93,24 +88,27 @@ def get_calendar_events(df):
         })
     return events
 
+# --- UI Begins ---
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>Your daily random sabji planner!</p>
+        <p style='font-size:15px; color:#f3f4f6;'>Your Daily Sabji Planner!</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
 
 menu_option = st.sidebar.radio("Choose View", ["Daily Menu", "Weekly Planner", "Admin"])
 
+# --- Daily Menu ---
 if menu_option == "Daily Menu":
     st.header("🎲 Generate Today's Menu")
     with st.expander("🔐 Lock/Unlock Today's Menu"):
         if "menu_locked" not in st.session_state:
             st.session_state.menu_locked = False
             st.session_state.locked_menu = None
+
         if not st.session_state.menu_locked:
             diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
             if st.button("Generate Menu"):
@@ -122,26 +120,22 @@ if menu_option == "Daily Menu":
                 else:
                     st.error("No valid combinations found.")
         else:
-            st.markdown("### ✅ TODAY’S MENU (LOCKED)")
             menu = st.session_state.locked_menu
             if menu:
                 st.markdown(f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>", unsafe_allow_html=True)
-                shack_icons = ["🥬", "🥘", "🫘", "🍛", "🍲", "🍲"]
-                shack_colors = ["#38bdf8", "#38bdf8", "#a3e635", "#a3e635", "#facc15", "#facc15"]
                 for i in range(1, 7):
                     label = f"Shack {i}"
                     dish = menu[label]
-                    icon = shack_icons[i - 1]
-                    color = shack_colors[i - 1]
                     st.markdown(f"""
-                        <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
-                        <b>{icon} {label}:</b> {dish}
+                        <div style='background-color:#facc15;padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
+                        <b>{label}:</b> {dish}
                         </div>
                     """, unsafe_allow_html=True)
             if st.button("🔓 Unlock & Regenerate"):
                 st.session_state.menu_locked = False
                 st.session_state.locked_menu = None
 
+# --- Weekly Planner ---
 elif menu_option == "Weekly Planner":
     st.header("📆 Weekly Menu Planner")
     today = date.today()
@@ -159,19 +153,15 @@ elif menu_option == "Weekly Planner":
     if menu_plan:
         df = pd.DataFrame(menu_plan)
         def highlight_jain(val):
-            if val == "Jain":
-                return 'background-color: #eafaf1; font-weight: bold; color: #1e4620'
-            return ''
+            return 'background-color: #eafaf1; font-weight: bold; color: #1e4620' if val == "Jain" else ''
         styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
             highlight_jain, subset=["Gujarati Type"]
         )
         with st.expander("📋 View Weekly Plan"):
             st.dataframe(styled_df, use_container_width=True)
-        csv = df.to_csv(index=False)
-        st.download_button("⬇️ Download Weekly Menu (CSV)", csv, "weekly_shack_menu.csv", "text/csv")
-    else:
-        st.warning("No menus could be generated.")
+        st.download_button("⬇️ Download Weekly Menu (CSV)", df.to_csv(index=False), "weekly_shack_menu.csv")
 
+# --- Admin Panel ---
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
@@ -192,8 +182,8 @@ elif menu_option == "Admin":
             st.dataframe(filtered_df)
             st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
-        if not filtered_df.empty:
-            st.subheader("📊 Show Calendar with Used Dates")
+        st.subheader("📊 Show Calendar with Used Dates")
+        try:
             events = get_calendar_events(filtered_df)
             calendar_options = {
                 "initialView": "dayGridMonth",
@@ -206,5 +196,7 @@ elif menu_option == "Admin":
                 "height": 550
             }
             calendar(events=events, options=calendar_options)
+        except Exception:
+            st.warning("Unable to load calendar events.")
     else:
         st.info("No logs found yet.")
