@@ -124,12 +124,11 @@ if menu_option == "Daily Menu":
             if menu:
                 st.markdown(f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>", unsafe_allow_html=True)
               for i in range(1, 7):
-    ...
-    st.markdown(f"""
-        <div style='background-color:#facc15;padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
-        <b>{label}:</b> {dish}
-        </div>
-    """, unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div style='background-color:#facc15;padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
+                    <b>{label}:</b> {dish}
+                    </div>
+                    """, unsafe_allow_html=True)
             if st.button("🔓 Unlock & Regenerate"):
                 st.session_state.menu_locked = False
                 st.session_state.locked_menu = None
