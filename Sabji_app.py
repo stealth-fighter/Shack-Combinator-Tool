@@ -101,37 +101,28 @@ st.markdown("""
 
 menu_option = st.sidebar.radio("Choose View", ["Daily Menu", "Weekly Planner", "Admin"])
 
-# --- Daily Menu ---
-if menu_option == "Daily Menu":
-    st.header("🎲 Generate Today's Menu")
-    with st.expander("🔐 Lock/Unlock Today's Menu"):
-        if "menu_locked" not in st.session_state:
-            st.session_state.menu_locked = False
-            st.session_state.locked_menu = None
+menu = st.session_state.locked_menu
+if menu:
+    st.markdown(
+        f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>",
+        unsafe_allow_html=True
+    )
 
-        if not st.session_state.menu_locked:
-            diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
-            if st.button("Generate Menu"):
-                menu = get_unique_menu(diet_type)
-                if menu:
-                    st.session_state.locked_menu = menu
-                    st.session_state.menu_locked = True
-                    save_menu_to_log(menu)
-                else:
-                    st.error("No valid combinations found.")
-        else:
-            menu = st.session_state.locked_menu
-            if menu:
-                st.markdown(f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>", unsafe_allow_html=True)
-              for i in range(1, 7):
-                    st.markdown(f"""
-                    <div style='background-color:#facc15;padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
-                    <b>{label}:</b> {dish}
-                    </div>
-                    """, unsafe_allow_html=True)
-            if st.button("🔓 Unlock & Regenerate"):
-                st.session_state.menu_locked = False
-                st.session_state.locked_menu = None
+    shack_icons = ["🥬", "🥘", "🫘", "🍛", "🍲", "🍲"]
+    shack_colors = ["#38bdf8", "#38bdf8", "#a3e635", "#a3e635", "#facc15", "#facc15"]
+
+    for i in range(1, 7):
+        label = f"Shack {i}"
+        dish = menu[label]
+        icon = shack_icons[i - 1]
+        color = shack_colors[i - 1]
+        st.markdown(
+            f\"\"\"
+            <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
+            <b>{icon} {label}:</b> {dish}
+            </div>
+            \"\"\", unsafe_allow_html=True
+        )
 
 # --- Weekly Planner ---
 elif menu_option == "Weekly Planner":
