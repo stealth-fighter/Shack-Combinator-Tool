@@ -3,9 +3,13 @@ import random
 import os
 import pickle
 import pandas as pd
-from datetime import date
+from datetime import datetime, date, timedelta
 from streamlit_calendar import calendar
-import json
+import pytz
+import calendar as cal
+
+# Timezone setup
+LA_TZ = pytz.timezone("America/Los_Angeles")
 
 # File paths
 used_combo_file = "used_combinations.pkl"
@@ -57,7 +61,7 @@ def get_unique_menu(diet_type):
             with open(used_combo_file, "wb") as f:
                 pickle.dump(used_combinations, f)
             return {
-                "Date": str(date.today()),
+                "Date": datetime.now(LA_TZ).strftime("%Y-%m-%d %H:%M:%S %Z"),
                 "Gujarati Type": diet_type,
                 "Shack 1": shack1,
                 "Shack 2": "Undhiyu",
@@ -94,7 +98,7 @@ st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="
 st.markdown("""
     <div style='background-color:#1f2937; padding:15px 10px; border-radius:10px; text-align:center; border: 1px solid #f97316;'>
         <h2 style='color:#f97316; margin:0;'>📋 SABJI MENU GENERATOR</h2>
-        <p style='font-size:15px; color:#f3f4f6;'>Your Daily Sabji Planner!</p>
+        <p style='font-size:15px; color:#f3f4f6;'>Your daily random sabji planner!</p>
     </div>
     <br>
 """, unsafe_allow_html=True)
@@ -140,24 +144,18 @@ if menu_option == "Daily Menu":
 
 elif menu_option == "Weekly Planner":
     st.header("📆 Weekly Menu Planner")
-    jain_days = st.number_input("Days with Jain Gujarati Dish", min_value=0, max_value=7, value=0)
-    none_days = 7 - jain_days
-    st.markdown(f"📝 Remaining {none_days} day(s) will use full Gujarati list.")
+    today = date.today()
+    weekdays = [(today + timedelta(days=i)).strftime("%A") for i in range(7)]
+    jain_days_selected = st.multiselect("Pick Days for Jain Gujarati Dish", weekdays)
 
     menu_plan = []
-    day_number = 1
-    for _ in range(jain_days):
-        menu = get_unique_menu("Jain")
+    for i, day in enumerate(weekdays):
+        diet_type = "Jain" if day in jain_days_selected else "None"
+        menu = get_unique_menu(diet_type)
         if menu:
-            menu["Day"] = f"Day {day_number}"
+            menu["Day"] = day
             menu_plan.append(menu)
-            day_number += 1
-    for _ in range(none_days):
-        menu = get_unique_menu("None")
-        if menu:
-            menu["Day"] = f"Day {day_number}"
-            menu_plan.append(menu)
-            day_number += 1
+
     if menu_plan:
         df = pd.DataFrame(menu_plan)
         def highlight_jain(val):
@@ -179,13 +177,12 @@ elif menu_option == "Admin":
     if os.path.exists(daily_log_file):
         log_df = pd.read_csv(daily_log_file)
         log_df["Date"] = pd.to_datetime(log_df["Date"], errors="coerce")
-        log_df = log_df.dropna(subset=["Date"])
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
 
         with st.expander("🗂️ View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
-            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].unique().tolist()))
+            selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].dropna().unique().tolist()))
             filtered_df = log_df[
                 (log_df["Date"] >= pd.to_datetime(date_range[0])) &
                 (log_df["Date"] <= pd.to_datetime(date_range[1]))
@@ -206,7 +203,7 @@ elif menu_option == "Admin":
                     "center": "title",
                     "right": "dayGridMonth,listMonth"
                 },
-                "height": 440,
+                "height": 550
             }
             calendar(events=events, options=calendar_options)
     else:
