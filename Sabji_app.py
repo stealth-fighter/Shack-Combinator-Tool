@@ -22,7 +22,6 @@ else:
     used_combinations = set()
 
 # Dishes
-
 gujarati_curries = [
     "Bhindi Potato", " Stuffed Bhindi (J)", "Bhindi Masala (J)", "Cauliflower Peas Potato",
     "Cauliflower Peas Tomato (J)", "Cauliflower Potato Tomato", "Eggplant Lilva/Eggplant Toover", 
@@ -88,7 +87,7 @@ def get_calendar_events(df):
         })
     return events
 
-# --- UI Begins ---
+# UI Setup
 st.set_page_config(page_title="SABJI MENU GENERATOR", page_icon="📋", layout="wide")
 
 st.markdown("""
@@ -101,31 +100,46 @@ st.markdown("""
 
 menu_option = st.sidebar.radio("Choose View", ["Daily Menu", "Weekly Planner", "Admin"])
 
-menu = st.session_state.locked_menu
-if menu:
-    st.markdown(
-        f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>",
-        unsafe_allow_html=True
-    )
+if "menu_locked" not in st.session_state:
+    st.session_state.menu_locked = False
+    st.session_state.locked_menu = None
 
-    shack_icons = ["🥬", "🥘", "🫘", "🍛", "🍲", "🍲"]
-    shack_colors = ["#38bdf8", "#38bdf8", "#a3e635", "#a3e635", "#facc15", "#facc15"]
+if menu_option == "Daily Menu":
+    st.header("🌹 Generate Today's Menu")
+    with st.expander("🔐 Lock/Unlock Today's Menu"):
+        if not st.session_state.menu_locked:
+            diet_type = st.radio("Gujarati Dish Type:", ["None", "Jain"])
+            if st.button("Generate Menu"):
+                menu = get_unique_menu(diet_type)
+                if menu:
+                    st.session_state.locked_menu = menu
+                    st.session_state.menu_locked = True
+                    save_menu_to_log(menu)
+                else:
+                    st.error("No valid combinations found.")
+        else:
+            menu = st.session_state.locked_menu
+            if menu:
+                st.markdown(f"<div style='background-color:#2d3748;padding:10px;border-radius:5px;margin-bottom:10px;color:#f3f4f6;'>Gujarati Type: <b>{menu['Gujarati Type']}</b></div>", unsafe_allow_html=True)
+                shack_icons = ["🥬", "🥘", "🧈", "🍛", "🍲", "🍲"]
+                shack_colors = ["#38bdf8", "#38bdf8", "#a3e635", "#a3e635", "#facc15", "#facc15"]
+                for i in range(1, 7):
+                    label = f"Shack {i}"
+                    dish = menu[label]
+                    icon = shack_icons[i - 1]
+                    color = shack_colors[i - 1]
+                    st.markdown(
+                        f"""
+                        <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
+                        <b>{icon} {label}:</b> {dish}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            if st.button("🔓 Unlock & Regenerate"):
+                st.session_state.menu_locked = False
+                st.session_state.locked_menu = None
 
-    for i in range(1, 7):
-        label = f"Shack {i}"
-        dish = menu[label]
-        icon = shack_icons[i - 1]
-        color = shack_colors[i - 1]
-        st.markdown(
-            f"""
-            <div style='background-color:{color};padding:10px 15px;border-radius:8px;margin-bottom:5px;'>
-            <b>{icon} {label}:</b> {dish}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-# --- Weekly Planner ---
 elif menu_option == "Weekly Planner":
     st.header("📆 Weekly Menu Planner")
     today = date.today()
@@ -144,14 +158,11 @@ elif menu_option == "Weekly Planner":
         df = pd.DataFrame(menu_plan)
         def highlight_jain(val):
             return 'background-color: #eafaf1; font-weight: bold; color: #1e4620' if val == "Jain" else ''
-        styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(
-            highlight_jain, subset=["Gujarati Type"]
-        )
+        styled_df = df[["Day", "Gujarati Type", "Shack 1", "Shack 2", "Shack 3", "Shack 4", "Shack 5", "Shack 6"]].style.applymap(highlight_jain, subset=["Gujarati Type"])
         with st.expander("📋 View Weekly Plan"):
             st.dataframe(styled_df, use_container_width=True)
         st.download_button("⬇️ Download Weekly Menu (CSV)", df.to_csv(index=False), "weekly_shack_menu.csv")
 
-# --- Admin Panel ---
 elif menu_option == "Admin":
     st.header("🛠️ Admin Panel")
     if os.path.exists(daily_log_file):
@@ -160,17 +171,14 @@ elif menu_option == "Admin":
         min_date = log_df["Date"].min()
         max_date = log_df["Date"].max()
 
-        with st.expander("🗂️ View Daily Menu Log"):
+        with st.expander("📂 View Daily Menu Log"):
             date_range = st.date_input("Select Date Range", [min_date.date(), max_date.date()])
             selected_dish = st.selectbox("Filter by Gujarati Dish (Optional)", ["All"] + sorted(log_df["Shack 1"].dropna().unique().tolist()))
-            filtered_df = log_df[
-                (log_df["Date"] >= pd.to_datetime(date_range[0])) &
-                (log_df["Date"] <= pd.to_datetime(date_range[1]))
-            ]
+            filtered_df = log_df[(log_df["Date"] >= pd.to_datetime(date_range[0])) & (log_df["Date"] <= pd.to_datetime(date_range[1]))]
             if selected_dish != "All":
                 filtered_df = filtered_df[filtered_df["Shack 1"] == selected_dish]
             st.dataframe(filtered_df)
-            st.download_button("📥 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
+            st.download_button("📅 Download Filtered Log", filtered_df.to_csv(index=False), "filtered_menu_log.csv")
 
         st.subheader("📊 Show Calendar with Used Dates")
         try:
